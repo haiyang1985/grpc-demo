@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration packages="com.ctrip.framework.clogging.agent.appender">
+  <Appenders>
+    <!--收集到CAT/Clog-->
+    <CatAppender name="Cat" />
+    <Console name="Console" target="SYSTEM_OUT">
+        <PatternLayout pattern="[%d{HH:mm:ss.SSS}] [%p] [%t] - %m%n"/>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <logger name="com.ctrip.framework.benchmark.client" additivity="false" level="TRACE">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="Cat" />
+    </logger>
+    <Root level="WARN">
+        <AppenderRef ref="Cat" />
+        <AppenderRef ref="Console" />
+    </Root>
+  </Loggers>
+</Configuration>
