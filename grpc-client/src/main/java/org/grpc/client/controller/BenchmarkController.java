@@ -17,7 +17,7 @@ public class BenchmarkController {
     private final GreeterGrpc.GreeterBlockingStub greeterStub;
 
     public BenchmarkController() {
-        String host = "10.32.21.16";
+        String host = "localhost";
         int port = 50051;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
         greeterStub = GreeterGrpc.newBlockingStub(channel);
