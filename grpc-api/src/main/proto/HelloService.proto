@@ -9,6 +9,9 @@ package helloworld;
 
 service Greeter {
   rpc SayHello (HelloRequest) returns (HelloResponse);
+  rpc ServerStream (HelloRequest) returns (stream HelloResponse);
+  rpc ClientStream (stream HelloRequest) returns (HelloResponse);
+  rpc biStream (stream HelloRequest) returns (stream HelloResponse);
 }
 
 message HelloRequest {
