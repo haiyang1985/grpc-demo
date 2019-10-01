@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author hy_gu on 2019/4/28
@@ -42,11 +43,72 @@ public class GreeterServer {
 
     private static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
         @Override
-        public void sayHello(HelloRequest request, StreamObserver<HelloResponse> responseObserver) {
+        public void sayHello(HelloRequest request, StreamObserver<HelloResponse> observer) {
             System.out.println("service:" + request.getName());
-            HelloResponse reply = HelloResponse.newBuilder().setMessage(("Hello: " + request.getName())).build();
-            responseObserver.onNext(reply);
-            responseObserver.onCompleted();
+            HelloResponse reply = HelloResponse.newBuilder().setMessage("Hello: " + request.getName()).build();
+            observer.onNext(reply);
+            observer.onCompleted();
         }
+
+        @Override
+        public void serverStream(HelloRequest request, StreamObserver<HelloResponse> observer) {
+            System.out.println("service:" + request.getName());
+            HelloResponse response = HelloResponse.newBuilder().setMessage("Hello:" + request.getName()).build();
+            observer.onNext(response);
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+            HelloResponse response2 = HelloResponse.newBuilder().setMessage("Hi:" + request.getName()).build();
+            observer.onNext(response2);
+            observer.onCompleted();
+        }
+
+        @Override
+        public StreamObserver<HelloRequest> clientStream(StreamObserver<HelloResponse> observer) {
+            return new StreamObserver<HelloRequest>() {
+                private HelloResponse.Builder builder = HelloResponse.newBuilder();
+
+                @Override
+                public void onNext(HelloRequest request) {
+                    builder.setMessage(builder.getMessage() + "," + request.getName());
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+
+                }
+
+                @Override
+                public void onCompleted() {
+                    builder.setMessage("hello " + builder.getMessage());
+                    observer.onNext(builder.build());
+                    observer.onCompleted();
+                }
+            };
+        }
+
+        @Override
+        public StreamObserver<HelloRequest> biStream(StreamObserver<HelloResponse> responseObserver) {
+            return new StreamObserver<HelloRequest>() {
+                @Override
+                public void onNext(HelloRequest request) {
+                    responseObserver.onNext(HelloResponse.newBuilder().setMessage("Hi " + request.getName()).build());
+                    responseObserver.onNext(HelloResponse.newBuilder().setMessage("Hello " + request.getName()).build());
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+
+                }
+
+                @Override
+                public void onCompleted() {
+                    responseObserver.onCompleted();
+                }
+            };
+        }
+
     }
 }
